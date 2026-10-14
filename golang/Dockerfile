@@ -133,7 +133,8 @@ RUN set -eux; \
       "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-checksums.txt"; \
     sha256sum -c --ignore-missing golangci-lint-checksums.txt; \
     tar -xzf "${asset}"; \
-    install -m 0755 "golangci-lint-${GOLANGCI_LINT_VERSION}-linux-${TARGETARCH}/golangci-lint" /usr/local/bin/golangci-lint
+    install -m 0755 "golangci-lint-${GOLANGCI_LINT_VERSION}-linux-${TARGETARCH}/golangci-lint" /usr/local/bin/golangci-lint; \
+    rm -rf "${asset}" golangci-lint-checksums.txt "golangci-lint-${GOLANGCI_LINT_VERSION}-linux-${TARGETARCH}"
 
 # --- go-arch-lint (checksums: checksums.txt) --------------------------------
 RUN set -eux; \
@@ -144,7 +145,8 @@ RUN set -eux; \
       "https://github.com/fe3dback/go-arch-lint/releases/download/v${GOARCHLINT_VERSION}/checksums.txt"; \
     sha256sum -c --ignore-missing goarchlint-checksums.txt; \
     tar -xzf "${asset}"; \
-    install -m 0755 go-arch-lint /usr/local/bin/go-arch-lint
+    install -m 0755 go-arch-lint /usr/local/bin/go-arch-lint; \
+    rm -rf "${asset}" goarchlint-checksums.txt go-arch-lint
 
 # --- gremlins (checksums: checksums.txt) ------------------------------------
 RUN set -eux; \
@@ -155,7 +157,8 @@ RUN set -eux; \
       "https://github.com/go-gremlins/gremlins/releases/download/v${GREMLINS_VERSION}/checksums.txt"; \
     sha256sum -c --ignore-missing gremlins-checksums.txt; \
     tar -xzf "${asset}"; \
-    install -m 0755 gremlins /usr/local/bin/gremlins
+    install -m 0755 gremlins /usr/local/bin/gremlins; \
+    rm -rf "${asset}" gremlins-checksums.txt gremlins
 
 # --- gofumpt (no upstream checksums file -> pinned checksum) -----------------
 RUN set -eux; \
@@ -168,7 +171,8 @@ RUN set -eux; \
     curl -fsSL -o "/tmp/${asset}" \
       "https://github.com/mvdan/gofumpt/releases/download/v${GOFUMPT_VERSION}/${asset}"; \
     echo "${expected}  /tmp/${asset}" | sha256sum -c -; \
-    install -m 0755 "/tmp/${asset}" /usr/local/bin/gofumpt
+    install -m 0755 "/tmp/${asset}" /usr/local/bin/gofumpt; \
+    rm -f "/tmp/${asset}"
 
 # --- gosec (checksums: gosec_<v>_checksums.txt) -----------------------------
 RUN set -eux; \
@@ -179,7 +183,8 @@ RUN set -eux; \
       "https://github.com/securego/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_checksums.txt"; \
     sha256sum -c --ignore-missing gosec-checksums.txt; \
     tar -xzf "${asset}"; \
-    install -m 0755 gosec /usr/local/bin/gosec
+    install -m 0755 gosec /usr/local/bin/gosec; \
+    rm -rf "${asset}" gosec-checksums.txt gosec
 
 # --- govulncheck (no binary releases -> go install, sum.golang.org) ---------
 RUN set -eux; \
@@ -198,7 +203,8 @@ RUN set -eux; \
     echo "${expected}  ${asset}" | sha256sum -c -; \
     tar -xzf "${asset}"; \
     # the yq tarball contains a single arch-suffixed binary (yq_linux_<arch>)
-    install -m 0755 "yq_linux_${TARGETARCH}" /usr/local/bin/yq
+    install -m 0755 "yq_linux_${TARGETARCH}" /usr/local/bin/yq; \
+    rm -rf "${asset}" "yq_linux_${TARGETARCH}" yq.1 install-man-page.sh
 
 # --- ripgrep (BurntSushi/ripgrep) (per-asset .sha256 only -> pinned) -------
 RUN set -eux; \
@@ -212,7 +218,8 @@ RUN set -eux; \
       "https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VERSION}/${asset}"; \
     echo "${expected}  ${asset}" | sha256sum -c -; \
     tar -xzf "${asset}"; \
-    install -m 0755 "ripgrep-${RIPGREP_VERSION}-${arch}-unknown-linux-musl/rg" /usr/local/bin/rg
+    install -m 0755 "ripgrep-${RIPGREP_VERSION}-${arch}-unknown-linux-musl/rg" /usr/local/bin/rg; \
+    rm -rf "${asset}" "ripgrep-${RIPGREP_VERSION}-${arch}-unknown-linux-musl"
 
 # --- fd (sharkdp/fd) (per-asset .sha256 only -> pinned) ---------------------
 RUN set -eux; \
@@ -226,7 +233,8 @@ RUN set -eux; \
       "https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/${asset}"; \
     echo "${expected}  ${asset}" | sha256sum -c -; \
     tar -xzf "${asset}"; \
-    install -m 0755 "fd-v${FD_VERSION}-${arch}-unknown-linux-gnu/fd" /usr/local/bin/fd
+    install -m 0755 "fd-v${FD_VERSION}-${arch}-unknown-linux-gnu/fd" /usr/local/bin/fd; \
+    rm -rf "${asset}" "fd-v${FD_VERSION}-${arch}-unknown-linux-gnu"
 
 # --- mockery (vektra/mockery) (no binary releases -> go install) ------------
 RUN set -eux; \
@@ -241,8 +249,11 @@ RUN set -eux; \
     GOBIN=/usr/local/bin GOPATH=/tmp/gopath go install "golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}"
 
 # --- nilaway (go.uber.org/nilaway) (no binary releases/tags -> go install) --
+# /tmp/gopath (shared module cache for all go-install tools) is removed here,
+# after the last go-install step, so the module cache is reused across layers.
 RUN set -eux; \
-    GOBIN=/usr/local/bin GOPATH=/tmp/gopath go install "go.uber.org/nilaway/cmd/nilaway@${NILAWAY_VERSION}"
+    GOBIN=/usr/local/bin GOPATH=/tmp/gopath go install "go.uber.org/nilaway/cmd/nilaway@${NILAWAY_VERSION}"; \
+    rm -rf /tmp/gopath
 
 # ============================================================================
 # final stage: ubuntu:26.04 + golang:1.27.2 environment + tools
@@ -299,11 +310,13 @@ COPY --from=build /usr/local/bin/go-licenses /usr/local/bin/go-licenses
 COPY --from=build /usr/local/bin/goimports /usr/local/bin/goimports
 COPY --from=build /usr/local/bin/nilaway /usr/local/bin/nilaway
 
-# markdownlint-cli — native npm (apt nodejs)
-RUN npm install -g "markdownlint-cli@${MARKDOWNLINT_CLI_VERSION}"
-
-# prettier — native npm (apt nodejs); formats JS/TS/JSON/YAML/Markdown
-RUN npm install -g "prettier@${PRETTIER_VERSION}"
+# markdownlint-cli + prettier — native npm (apt nodejs). prettier formats
+# JS/TS/JSON/YAML/Markdown. npm cache is cleaned in the same layer so it does
+# not bloat the final image.
+RUN npm install -g \
+        "markdownlint-cli@${MARKDOWNLINT_CLI_VERSION}" \
+        "prettier@${PRETTIER_VERSION}" \
+    && npm cache clean --force
 
 # Environment identical to the official golang:1.27.2
 ENV GOLANG_VERSION=${GOLANG_VERSION}
