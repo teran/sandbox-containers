@@ -197,7 +197,8 @@ RUN set -eux; \
       "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/${asset}"; \
     echo "${expected}  ${asset}" | sha256sum -c -; \
     tar -xzf "${asset}"; \
-    install -m 0755 yq /usr/local/bin/yq
+    # the yq tarball contains a single arch-suffixed binary (yq_linux_<arch>)
+    install -m 0755 "yq_linux_${TARGETARCH}" /usr/local/bin/yq
 
 # --- ripgrep (BurntSushi/ripgrep) (per-asset .sha256 only -> pinned) -------
 RUN set -eux; \
