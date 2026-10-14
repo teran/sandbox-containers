@@ -40,6 +40,15 @@ pushed, and the `Dockerfile` is linted with hadolint — see
 | gofumpt | 0.12.0 | GitHub binary release | ✅ pinned sha256 (no upstream checksums) |
 | gosec | 2.29.0 | GitHub binary release | ✅ `sha256sum -c` against `gosec_2.29.0_checksums.txt` |
 | gremlins | 0.6.0 | GitHub binary release | ✅ `sha256sum -c` against `checksums.txt` |
+| yq | 4.54.1 | GitHub binary release | ✅ pinned sha256 (non-standard checksums format) |
+| ripgrep (rg) | 15.2.0 | GitHub binary release (musl) | ✅ pinned sha256 (per-asset `.sha256` only) |
+| fd | 10.5.0 | GitHub binary release | ✅ pinned sha256 (per-asset `.sha256` only) |
+| mockery | v3.8.1 | `go install` (no binary releases) | ✅ via sum.golang.org |
+| go-licenses | v2.0.1 | `go install` (no binary releases) | ✅ via sum.golang.org |
+| goimports | v0.52.0 | `go install` (no binary releases) | ✅ via sum.golang.org |
+| nilaway | pseudo-version `v0.0.0-…-acb8859b9031` | `go install` (no binary releases/tags) | ✅ via sum.golang.org |
+| jq | apt (universe) | apt package | ✅ apt-managed |
+| prettier | 3.9.10 | npm (native nodejs from apt) | ✅ npm integrity hashes |
 | markdownlint-cli | 0.49.1 | npm (native nodejs from apt) | ✅ npm integrity hashes |
 
 Release sources:
@@ -50,7 +59,15 @@ Release sources:
 - gofumpt: https://github.com/mvdan/gofumpt/releases/tag/v0.12.0
 - gosec: https://github.com/securego/gosec/releases/tag/v2.29.0
 - gremlins: https://github.com/go-gremlins/gremlins/releases/tag/v0.6.0
+- yq: https://github.com/mikefarah/yq/releases/tag/v4.54.1
+- ripgrep: https://github.com/BurntSushi/ripgrep/releases/tag/15.2.0
+- fd: https://github.com/sharkdp/fd/releases/tag/v10.5.0
+- mockery: https://github.com/vektra/mockery/releases/tag/v3.8.1
+- go-licenses: https://github.com/google/go-licenses/releases/tag/v2.0.1
+- goimports: https://github.com/golang/tools/releases/tag/v0.52.0
+- nilaway: https://github.com/uber-go/nilaway (no releases/tags; pseudo-version from module proxy)
 - markdownlint-cli: https://github.com/igorshubovych/markdownlint-cli/releases/tag/0.49.1
+- prettier: https://www.npmjs.com/package/prettier
 
 ## Official sha256 of the Go 1.27.2 tarballs
 
@@ -120,7 +137,8 @@ installs cgo dependencies in its final stage. On ubuntu:26.04 this maps to:
 - base set: `ca-certificates curl wget git openssh-client`
 - cgo dependencies: `gcc g++ make libc6-dev pkg-config`
 - on `arm64` additionally: `binutils-gold`
-- markdownlint: `nodejs npm`
+- `jq` (universe, for JSON processing in the sandbox)
+- markdownlint + prettier: `nodejs npm`
 
 ## How Node / markdownlint-cli is installed on ubuntu:26.04
 
@@ -168,15 +186,26 @@ curl -fsSL -o checksums.txt ".../download/v${VER}/checksums.txt"
 sha256sum -c --ignore-missing checksums.txt
 ```
 
-**gofumpt** — upstream publishes no checksums file (only bare binaries),
-so the sha256 values are pinned in the `Dockerfile` as
-`GOFUMPT_SHA256_AMD64/ARM64` and verified before installation:
-`echo "${expected}  /tmp/${asset}" | sha256sum -c -`.
+**gofumpt / yq / ripgrep / fd** — these projects do not publish a file that
+`sha256sum -c` can consume directly (gofumpt ships bare binaries; yq's
+`checksums` file uses a non-standard multi-hash format; ripgrep and fd ship
+only per-asset `.sha256` files). Their `sha256` values are pinned in the
+`Dockerfile` as `<TOOL>_SHA256_AMD64/ARM64` ARGs and verified before
+installation: `echo "${expected}  ${asset}" | sha256sum -c -`.
 
-**govulncheck** — the `golang/vuln` project has no binary releases (0 assets
-in all releases), so `go install golang.org/x/vuln/cmd/govulncheck@v1.1.4`
-(pinned version) is used, with integrity verified via the Go module checksum
-database (`sum.golang.org`).
+**govulncheck / mockery / go-licenses / goimports / nilaway** — these projects
+publish no binary releases (or, in the case of nilaway, no release tags at
+all), so `go install <path>@<pinned-version>` is used, with integrity verified
+via the Go module checksum database (`sum.golang.org`). Note the pinned
+versions are the latest *released* tags where they exist; nilaway has no
+release tags, so its pinned version is a module pseudo-version
+(`v0.0.0-20260918162853-acb8859b9031`) resolved through the Go module proxy.
+
+**jq** — installed from Ubuntu's `universe` repository via `apt`; integrity is
+managed by apt (Debian package signing).
+
+**prettier / markdownlint-cli** — installed natively via npm on the apt-provided
+nodejs (see the section above); integrity is verified by npm's integrity hashes.
 
 ## Build
 
@@ -204,17 +233,40 @@ docker run --rm -it -u 1000:1000 -v "$PWD":/go/src/app -w /go/src/app golang-san
 
 ## Conflicts / decisions
 
-1. **govulncheck cannot be downloaded from a binary release** (the
-   `golang/vuln` project publishes no binary assets) → installed via
-   `go install` with sum.golang.org verification.
-2. **gofumpt has no upstream checksums file** → checksums are pinned in the
-   Dockerfile (computed from the official v0.12.0 assets).
+1. **govulncheck / mockery / go-licenses / goimports / nilaway cannot be
+   downloaded from a binary release** → installed via `go install` with
+   sum.golang.org verification.
+2. **gofumpt / yq / ripgrep / fd have no `sha256sum -c`-compatible checksum
+   file** → checksums are pinned in the Dockerfile (computed from the official
+   release assets; yq's `checksums` uses a non-standard multi-hash format,
+   ripgrep/fd ship only per-asset `.sha256`).
 3. **Node**: native apt on ubuntu:26.04 (nodejs 22.22.1 ≥ 22) instead of a
-   node stage — see the section above.
+   node stage — see the section above. Both `prettier` and `markdownlint-cli`
+   are installed through this npm.
 4. **Architecture**: `TARGETARCH` (amd64/arm64) matches GOARCH and asset
    names; name differences are handled (golangci-lint in an archive
-   subdirectory, go-arch-lint/gremlins in the archive root, gofumpt as a bare
-   binary).
+   subdirectory, go-arch-lint/gremlins in the archive root, gofumpt/yq as
+   extracted binaries, ripgrep/fd with `x86_64`/`aarch64` arch names and
+   per-tool musl/gnu build selection).
+
+## prettier vs markdownlint: formatting vs linting
+
+Both are npm tools installed on the same apt nodejs, but they do **different**
+jobs and it is intentional that they overlap on Markdown:
+
+- **prettier** *formats* (rewrites) JS/TS/JSON/YAML/Markdown/HTML/CSS. Run it
+  to enforce a consistent code style:
+  ```bash
+  prettier --write '**/*.{js,ts,json,yaml,md}'
+  ```
+- **markdownlint-cli** *lints* Markdown (reports rule violations: line length,
+  heading structure, trailing spaces, etc.) and does not rewrite files:
+  ```bash
+  markdownlint '**/*.md'
+  ```
+
+So for Markdown: **prettier formats, markdownlint lints** — they are not
+interchangeable and both are included deliberately.
 
 ## Structure
 
