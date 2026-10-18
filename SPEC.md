@@ -33,7 +33,7 @@ The only image today is the **Go sandbox** (`golang/`). See
   the environment mirrors the official `golang:1.27.2` image
   (`GOTOOLCHAIN=local`, `GOROOT=/usr/local/go`, `GOPATH=/go`).
 - **Linter/quality toolset** (checksum-verified):
-  `golangci-lint 2.14.0`, `govulncheck v1.1.4`, `go-arch-lint 1.19.0`,
+  `golangci-lint 2.15.0`, `govulncheck v1.9.0`, `go-arch-lint 1.19.0`,
   `gofumpt 0.12.0`, `gosec 2.29.0`, `gremlins 0.6.0`, `yq 4.54.1`,
   `ripgrep 15.2.0`, `fd 10.5.0`, `mockery v3.8.1`, `go-licenses v2.0.1`,
   `goimports v0.52.0`, `nilaway` (pseudo-version), `jq` (apt),
