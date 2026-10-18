@@ -25,14 +25,14 @@ ARG GO_SHA256_AMD64=ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf7699604
 ARG GO_SHA256_ARM64=94f3e30b8e374bc285e7dadc11e0865726b9bc6e85b841ccceaabc0214c6b7c8
 
 # Go tools (GitHub binary releases)
-ARG GOLANGCI_LINT_VERSION=2.14.0
+ARG GOLANGCI_LINT_VERSION=2.15.0
 ARG GOARCHLINT_VERSION=1.19.0
 ARG GREMLINS_VERSION=0.6.0
 ARG GOFUMPT_VERSION=0.12.0
 ARG GOSEC_VERSION=2.29.0
 
 # govulncheck does NOT publish binary releases -> go install (sum.golang.org)
-ARG GOVULNCHECK_VERSION=v1.1.4
+ARG GOVULNCHECK_VERSION=v1.9.0
 
 # yq / ripgrep / fd do not publish a sha256sum-compatible checksums.txt
 # (yq's `checksums` file uses a non-standard multi-hash format; rg/fd ship

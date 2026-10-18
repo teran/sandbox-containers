@@ -34,8 +34,8 @@ pushed, and the `Dockerfile` is linted with hadolint — see
 | Tool | Version | Installation | Checksum verification |
 |---|---|---|---|
 | Go (golang) | 1.27.2 | official tarball → `/usr/local/go` | ✅ official sha256 (go.dev/dl/?mode=json) |
-| golangci-lint | 2.14.0 | GitHub binary release | ✅ `sha256sum -c` against `golangci-lint-2.14.0-checksums.txt` |
-| govulncheck | v1.1.4 | `go install` (no binary releases) | ✅ via sum.golang.org |
+| golangci-lint | 2.15.0 | GitHub binary release | ✅ `sha256sum -c` against `golangci-lint-2.15.0-checksums.txt` |
+| govulncheck | v1.9.0 | `go install` (no binary releases) | ✅ via sum.golang.org |
 | go-arch-lint | 1.19.0 | GitHub binary release | ✅ `sha256sum -c` against `checksums.txt` |
 | gofumpt | 0.12.0 | GitHub binary release | ✅ pinned sha256 (no upstream checksums) |
 | gosec | 2.29.0 | GitHub binary release | ✅ `sha256sum -c` against `gosec_2.29.0_checksums.txt` |
@@ -53,8 +53,8 @@ pushed, and the `Dockerfile` is linted with hadolint — see
 
 Release sources:
 - Go tarball: https://go.dev/dl/go1.27.2.linux-<arch>.tar.gz (or https://dl.google.com/go/)
-- golangci-lint: https://github.com/golangci/golangci-lint/releases/tag/v2.14.0
-- govulncheck: https://github.com/golang/vuln/releases/tag/v1.1.4
+- golangci-lint: https://github.com/golangci/golangci-lint/releases/tag/v2.15.0
+- govulncheck: https://github.com/golang/vuln/releases/tag/v1.9.0
 - go-arch-lint: https://github.com/fe3dback/go-arch-lint/releases/tag/v1.19.0
 - gofumpt: https://github.com/mvdan/gofumpt/releases/tag/v0.12.0
 - gosec: https://github.com/securego/gosec/releases/tag/v2.29.0
