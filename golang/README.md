@@ -1,8 +1,8 @@
-# golang-sandbox — Go 1.27.2 sandbox on a vanilla ubuntu:26.04
+# golang-sandbox — Go 1.27.3 sandbox on a vanilla ubuntu:26.04
 
 A sandbox from the image set, built on a **vanilla `ubuntu:26.04`**
-(Resolute Raccoon, LTS): Go 1.27.2 is installed from the official tarball,
-the environment mirrors the official `golang:1.27.2` image, and the toolset
+(Resolute Raccoon, LTS): Go 1.27.3 is installed from the official tarball,
+the environment mirrors the official `golang:1.27.3` image, and the toolset
 is the same.
 
 ## Image registry
@@ -19,9 +19,9 @@ On every merge to `master` the image is built for **linux/amd64** and
 
 | Tag | Example |
 |---|---|
-| Go version | `1.27.2` |
-| Go version + commit SHA | `1.27.2-<short-sha>` |
-| Go version + commit SHA + timestamp | `1.27.2-<short-sha>-<yyyyMMddHHmmss>` |
+| Go version | `1.27.3` |
+| Go version + commit SHA | `1.27.3-<short-sha>` |
+| Go version + commit SHA + timestamp | `1.27.3-<short-sha>-<yyyyMMddHHmmss>` |
 
 The Go version tag is extracted automatically from the `Dockerfile`
 (`ARG GOLANG_VERSION=...`), so it always stays in sync with the build.
@@ -33,7 +33,7 @@ pushed, and the `Dockerfile` is linted with hadolint — see
 
 | Tool | Version | Installation | Checksum verification |
 |---|---|---|---|
-| Go (golang) | 1.27.2 | official tarball → `/usr/local/go` | ✅ official sha256 (go.dev/dl/?mode=json) |
+| Go (golang) | 1.27.3 | official tarball → `/usr/local/go` | ✅ official sha256 (go.dev/dl/?mode=json) |
 | golangci-lint | 2.15.0 | GitHub binary release | ✅ `sha256sum -c` against `golangci-lint-2.15.0-checksums.txt` |
 | govulncheck | v1.9.0 | `go install` (no binary releases) | ✅ via sum.golang.org |
 | go-arch-lint | 1.19.0 | GitHub binary release | ✅ `sha256sum -c` against `checksums.txt` |
@@ -52,7 +52,7 @@ pushed, and the `Dockerfile` is linted with hadolint — see
 | markdownlint-cli | 0.49.1 | npm (native nodejs from apt) | ✅ npm integrity hashes |
 
 Release sources:
-- Go tarball: https://go.dev/dl/go1.27.2.linux-<arch>.tar.gz (or https://dl.google.com/go/)
+- Go tarball: https://go.dev/dl/go1.27.3.linux-<arch>.tar.gz (or https://dl.google.com/go/)
 - golangci-lint: https://github.com/golangci/golangci-lint/releases/tag/v2.15.0
 - govulncheck: https://github.com/golang/vuln/releases/tag/v1.9.0
 - go-arch-lint: https://github.com/fe3dback/go-arch-lint/releases/tag/v1.19.0
@@ -69,20 +69,20 @@ Release sources:
 - markdownlint-cli: https://github.com/igorshubovych/markdownlint-cli/releases/tag/0.49.1
 - prettier: https://www.npmjs.com/package/prettier
 
-## Official sha256 of the Go 1.27.2 tarballs
+## Official sha256 of the Go 1.27.3 tarballs
 
 | Architecture | File | sha256 |
 |---|---|---|
-| amd64 | `go1.27.2.linux-amd64.tar.gz` | `ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5` |
-| arm64 | `go1.27.2.linux-arm64.tar.gz` | `94f3e30b8e374bc285e7dadc11e0865726b9bc6e85b841ccceaabc0214c6b7c8` |
+| amd64 | `go1.27.3.linux-amd64.tar.gz` | `65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40` |
+| arm64 | `go1.27.3.linux-arm64.tar.gz` | `a06e99309dbcbdca1a8ccd2282c3ee146e55930886e26b4f1193269587165f49` |
 
 Source: https://go.dev/dl/?mode=json (same values as in the official
-`golang:1.27.2` Dockerfile).
+`golang:1.27.3` Dockerfile).
 
-## Environment (ENV), as in golang:1.27.2
+## Environment (ENV), as in golang:1.27.3
 
 ```dockerfile
-ENV GOLANG_VERSION=1.27.2
+ENV GOLANG_VERSION=1.27.3
 ENV GOTOOLCHAIN=local
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/go
@@ -124,13 +124,13 @@ container runs (useful for recurring linters/builds):
 time (e.g. a shared module cache for the whole CI):
 ```bash
 docker run --rm -v gocache:/go/cache -v gomodcache:/go/pkg/mod \
-  -v "$PWD":/go/src/app -w /go/src/app golang-sandbox:1.27.2 \
+  -v "$PWD":/go/src/app -w /go/src/app golang-sandbox:1.27.3 \
   sh -c 'golangci-lint run ./...'
 ```
 
 ### System packages
 
-The official `golang:1.27.2` is built on `buildpack-deps:bookworm-scm`
+The official `golang:1.27.3` is built on `buildpack-deps:bookworm-scm`
 (git, ca-certificates, curl, wget, openssh-client, etc.) and additionally
 installs cgo dependencies in its final stage. On ubuntu:26.04 this maps to:
 
@@ -165,7 +165,7 @@ redundant.)
 ## How checksum verification is implemented
 
 **Go tarball** — downloaded from
-`https://dl.google.com/go/go1.27.2.linux-<arch>.tar.gz` and verified against
+`https://dl.google.com/go/go1.27.3.linux-<arch>.tar.gz` and verified against
 the official sha256 (the same trick as in the official golang image —
 `echo "$sha256 *<file>" | sha256sum -c -`):
 
@@ -211,24 +211,24 @@ nodejs (see the section above); integrity is verified by npm's integrity hashes.
 
 ```bash
 cd golang
-docker build -t golang-sandbox:1.27.2 .
+docker build -t golang-sandbox:1.27.3 .
 # explicit platform
-docker build --platform linux/amd64 -t golang-sandbox:1.27.2 .
-docker build --platform linux/arm64 -t golang-sandbox:1.27.2 .
+docker build --platform linux/amd64 -t golang-sandbox:1.27.3 .
+docker build --platform linux/arm64 -t golang-sandbox:1.27.3 .
 ```
 
 ## Run
 
 ```bash
-docker run --rm golang-sandbox:1.27.2 \
+docker run --rm golang-sandbox:1.27.3 \
   sh -c 'go version && golangci-lint --version && markdownlint --version'
 
 # linters on your project
-docker run --rm -v "$PWD":/go/src/app -w /go/src/app golang-sandbox:1.27.2 \
+docker run --rm -v "$PWD":/go/src/app -w /go/src/app golang-sandbox:1.27.3 \
   sh -c 'gofumpt -l . && golangci-lint run ./...'
 
 # interactive session as user (UID 1000)
-docker run --rm -it -u 1000:1000 -v "$PWD":/go/src/app -w /go/src/app golang-sandbox:1.27.2 bash
+docker run --rm -it -u 1000:1000 -v "$PWD":/go/src/app -w /go/src/app golang-sandbox:1.27.3 bash
 ```
 
 ## Conflicts / decisions

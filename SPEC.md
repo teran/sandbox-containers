@@ -22,15 +22,15 @@ Every image is:
 
 | Image | Directory | Runtime | Base |
 |---|---|---|---|
-| `golang` | `golang/` | Go 1.27.2 | `ubuntu:26.04` |
+| `golang` | `golang/` | Go 1.27.3 | `ubuntu:26.04` |
 
 The only image today is the **Go sandbox** (`golang/`). See
 [`golang/README.md`](golang/README.md) for its full contents and rationale.
 
 ### 2.1 The Go sandbox (`golang/`)
 
-- **Go 1.27.2** installed from the official tarball into `/usr/local/go`;
-  the environment mirrors the official `golang:1.27.2` image
+- **Go 1.27.3** installed from the official tarball into `/usr/local/go`;
+  the environment mirrors the official `golang:1.27.3` image
   (`GOTOOLCHAIN=local`, `GOROOT=/usr/local/go`, `GOPATH=/go`).
 - **Linter/quality toolset** (checksum-verified):
   `golangci-lint 2.15.0`, `govulncheck v1.9.0`, `go-arch-lint 1.19.0`,
@@ -108,10 +108,10 @@ where `<short-sha>` is the first 7 characters of `GITHUB_SHA` and
 
 | Tag | Example | Meaning | Pushed |
 |---|---|---|---|
-| `<go-version>` | `1.27.2` | immutable, per Go release | ✅ push |
-| `<go-version>-<short-sha>` | `1.27.2-4c8f2a1` | per commit, stable | ✅ push |
-| `<go-version>-<short-sha>-<timestamp>` | `1.27.2-4c8f2a1-20241014120000` | per build, unique | ✅ push |
-| `<go-version>` (PR build) | `1.27.2` | local build only | ❌ never pushed |
+| `<go-version>` | `1.27.3` | immutable, per Go release | ✅ push |
+| `<go-version>-<short-sha>` | `1.27.3-4c8f2a1` | per commit, stable | ✅ push |
+| `<go-version>-<short-sha>-<timestamp>` | `1.27.3-4c8f2a1-20241014120000` | per build, unique | ✅ push |
+| `<go-version>` (PR build) | `1.27.3` | local build only | ❌ never pushed |
 
 Pushing occurs only when `github.event_name == 'push'`.
 
@@ -134,7 +134,7 @@ Pushing occurs only when `github.event_name == 'push'`.
 │   └── workflows/
 │       └── build.yml          # CI: hadolint + build (+ push on master)
 ├── golang/
-│   ├── Dockerfile             # Go 1.27.2 sandbox (multi-stage, multi-arch)
+│   ├── Dockerfile             # Go 1.27.3 sandbox (multi-stage, multi-arch)
 │   ├── README.md              # full Go-image documentation
 │   └── .dockerignore          # keep the build context lean
 ├── LICENSE                    # Apache License 2.0
