@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 #
-# Go 1.27.2 sandbox on a VANILLA ubuntu:26.04 (Resolute Raccoon) base.
+# Go 1.27.3 sandbox on a VANILLA ubuntu:26.04 (Resolute Raccoon) base.
 # Go is installed from the official tarball https://go.dev/dl/ (dl.google.com)
-# into /usr/local/go; the environment mirrors the official golang:1.27.2 image,
+# into /usr/local/go; the environment mirrors the official golang:1.27.3 image,
 # and the linter toolset is the same as the root golang sandbox.
 #
 # Principles:
 #   * Versions and checksums are pinned as ARG at the top.
-#   * The Go tarball is fetched from https://dl.google.com/go/go1.27.2.linux-<arch>.tar.gz
+#   * The Go tarball is fetched from https://dl.google.com/go/go1.27.3.linux-<arch>.tar.gz
 #     and verified against the official sha256 (published at https://go.dev/dl/?mode=json).
 #   * Tools distributed as binary releases are downloaded from GitHub and
 #     verified by checksum before installation.
@@ -19,10 +19,10 @@
 # ============================================================================
 ARG UBUNTU_VERSION=26.04
 
-ARG GOLANG_VERSION=1.27.2
+ARG GOLANG_VERSION=1.27.3
 # Official sha256 of the Go tarballs (https://go.dev/dl/?mode=json)
-ARG GO_SHA256_AMD64=ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5
-ARG GO_SHA256_ARM64=94f3e30b8e374bc285e7dadc11e0865726b9bc6e85b841ccceaabc0214c6b7c8
+ARG GO_SHA256_AMD64=65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40
+ARG GO_SHA256_ARM64=a06e99309dbcbdca1a8ccd2282c3ee146e55930886e26b4f1193269587165f49
 
 # Go tools (GitHub binary releases)
 ARG GOLANGCI_LINT_VERSION=2.15.0
@@ -109,7 +109,7 @@ ENV GOROOT=/usr/local/go
 ENV PATH="/usr/local/go/bin:${PATH}"
 WORKDIR /build
 
-# --- Go 1.27.2 (official tarball, verified against official sha256) ---------
+# --- Go 1.27.3 (official tarball, verified against official sha256) ---------
 # Verification mirrors the official golang image: echo "$sha256 *<file>" | sha256sum -c -
 RUN set -eux; \
     case "${TARGETARCH}" in \
@@ -256,14 +256,14 @@ RUN set -eux; \
     rm -rf /tmp/gopath
 
 # ============================================================================
-# final stage: ubuntu:26.04 + golang:1.27.2 environment + tools
+# final stage: ubuntu:26.04 + golang:1.27.3 environment + tools
 # ============================================================================
 FROM ubuntu:${UBUNTU_VERSION} AS final
 ARG GOLANG_VERSION
 ARG MARKDOWNLINT_CLI_VERSION
 ARG PRETTIER_VERSION
 
-# System packages, as in the official golang:1.27.2 image:
+# System packages, as in the official golang:1.27.3 image:
 #   * cgo dependencies of the golang image's final stage: g++, gcc, libc6-dev, make,
 #     pkg-config (+ binutils-gold on arm64);
 #   * the buildpack-deps:bookworm-scm base set (git, ca-certificates, curl, wget,
@@ -318,7 +318,7 @@ RUN npm install -g \
         "prettier@${PRETTIER_VERSION}" \
     && npm cache clean --force
 
-# Environment identical to the official golang:1.27.2
+# Environment identical to the official golang:1.27.3
 ENV GOLANG_VERSION=${GOLANG_VERSION}
 ENV GOTOOLCHAIN=local
 ENV GOROOT=/usr/local/go
