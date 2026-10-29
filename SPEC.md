@@ -33,11 +33,11 @@ The only image today is the **Go sandbox** (`golang/`). See
   the environment mirrors the official `golang:1.27.3` image
   (`GOTOOLCHAIN=local`, `GOROOT=/usr/local/go`, `GOPATH=/go`).
 - **Linter/quality toolset** (checksum-verified):
-  `golangci-lint 2.15.0`, `govulncheck v1.9.0`, `go-arch-lint 1.19.0`,
-  `gofumpt 0.12.0`, `gosec 2.29.0`, `gremlins 0.6.0`, `yq 4.54.1`,
-  `ripgrep 15.2.0`, `fd 10.5.0`, `mockery v3.8.1`, `go-licenses v2.0.1`,
+  `golangci-lint 2.15.0`, `govulncheck v1.9.0`, `go-arch-lint 1.19.1`,
+  `gofumpt 0.12.0`, `gosec 2.30.0`, `gremlins 0.6.0`, `yq 4.54.1`,
+  `ripgrep 15.2.0`, `fd 10.5.0`, `mockery v3.9.0`, `go-licenses v2.0.1`,
   `goimports v0.52.0`, `nilaway` (pseudo-version), `jq` (apt),
-  `prettier 3.9.10`, `markdownlint-cli 0.49.1`.
+  `prettier 3.9.10`, `markdownlint-cli 0.50.0`.
 - **Non-root** runtime user `1000:1000`; dedicated volumes for Go caches.
 - System packages mirroring the cgo/base requirements of the official image
   (`gcc g++ make libc6-dev pkg-config binutils-gold` on arm64, git, etc.).
