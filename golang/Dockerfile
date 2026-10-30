@@ -26,10 +26,10 @@ ARG GO_SHA256_ARM64=a06e99309dbcbdca1a8ccd2282c3ee146e55930886e26b4f119326958716
 
 # Go tools (GitHub binary releases)
 ARG GOLANGCI_LINT_VERSION=2.15.0
-ARG GOARCHLINT_VERSION=1.19.0
+ARG GOARCHLINT_VERSION=1.19.1
 ARG GREMLINS_VERSION=0.6.0
 ARG GOFUMPT_VERSION=0.12.0
-ARG GOSEC_VERSION=2.29.0
+ARG GOSEC_VERSION=2.30.0
 
 # govulncheck does NOT publish binary releases -> go install (sum.golang.org)
 ARG GOVULNCHECK_VERSION=v1.9.0
@@ -56,7 +56,7 @@ ARG GOFUMPT_SHA256_AMD64=3bc4fcad497439918f5f56d4987de4709a99da0a355e6bec13a7278
 ARG GOFUMPT_SHA256_ARM64=4322f081241ab0618356aa5921a8c110e4c7acfc17175cc15dc57b2f4a4b652d
 
 # Go tools installed via `go install` (sum.golang.org verification)
-ARG MOCKERY_VERSION=v3.8.1
+ARG MOCKERY_VERSION=v3.9.0
 ARG GO_LICENSES_VERSION=v2.0.1
 ARG GOIMPORTS_VERSION=v0.52.0
 # nilaway publishes no release tags; the version is a module pseudo-version
@@ -64,7 +64,7 @@ ARG GOIMPORTS_VERSION=v0.52.0
 ARG NILAWAY_VERSION=v0.0.0-20260918162853-acb8859b9031
 
 # markdownlint-cli (npm, native node from apt)
-ARG MARKDOWNLINT_CLI_VERSION=0.49.1
+ARG MARKDOWNLINT_CLI_VERSION=0.50.0
 
 # prettier (npm, native node from apt) — formats JS/TS/JSON/YAML/Markdown
 ARG PRETTIER_VERSION=3.9.10

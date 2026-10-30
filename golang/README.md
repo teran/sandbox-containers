@@ -36,37 +36,37 @@ pushed, and the `Dockerfile` is linted with hadolint — see
 | Go (golang) | 1.27.3 | official tarball → `/usr/local/go` | ✅ official sha256 (go.dev/dl/?mode=json) |
 | golangci-lint | 2.15.0 | GitHub binary release | ✅ `sha256sum -c` against `golangci-lint-2.15.0-checksums.txt` |
 | govulncheck | v1.9.0 | `go install` (no binary releases) | ✅ via sum.golang.org |
-| go-arch-lint | 1.19.0 | GitHub binary release | ✅ `sha256sum -c` against `checksums.txt` |
+| go-arch-lint | 1.19.1 | GitHub binary release | ✅ `sha256sum -c` against `checksums.txt` |
 | gofumpt | 0.12.0 | GitHub binary release | ✅ pinned sha256 (no upstream checksums) |
-| gosec | 2.29.0 | GitHub binary release | ✅ `sha256sum -c` against `gosec_2.29.0_checksums.txt` |
+| gosec | 2.30.0 | GitHub binary release | ✅ `sha256sum -c` against `gosec_2.30.0_checksums.txt` |
 | gremlins | 0.6.0 | GitHub binary release | ✅ `sha256sum -c` against `checksums.txt` |
 | yq | 4.54.1 | GitHub binary release | ✅ pinned sha256 (non-standard checksums format) |
 | ripgrep (rg) | 15.2.0 | GitHub binary release (musl) | ✅ pinned sha256 (per-asset `.sha256` only) |
 | fd | 10.5.0 | GitHub binary release | ✅ pinned sha256 (per-asset `.sha256` only) |
-| mockery | v3.8.1 | `go install` (no binary releases) | ✅ via sum.golang.org |
+| mockery | v3.9.0 | `go install` (no binary releases) | ✅ via sum.golang.org |
 | go-licenses | v2.0.1 | `go install` (no binary releases) | ✅ via sum.golang.org |
 | goimports | v0.52.0 | `go install` (no binary releases) | ✅ via sum.golang.org |
 | nilaway | pseudo-version `v0.0.0-…-acb8859b9031` | `go install` (no binary releases/tags) | ✅ via sum.golang.org |
 | jq | apt (universe) | apt package | ✅ apt-managed |
 | prettier | 3.9.10 | npm (native nodejs from apt) | ✅ npm integrity hashes |
-| markdownlint-cli | 0.49.1 | npm (native nodejs from apt) | ✅ npm integrity hashes |
+| markdownlint-cli | 0.50.0 | npm (native nodejs from apt) | ✅ npm integrity hashes |
 
 Release sources:
 - Go tarball: https://go.dev/dl/go1.27.3.linux-<arch>.tar.gz (or https://dl.google.com/go/)
 - golangci-lint: https://github.com/golangci/golangci-lint/releases/tag/v2.15.0
 - govulncheck: https://github.com/golang/vuln/releases/tag/v1.9.0
-- go-arch-lint: https://github.com/fe3dback/go-arch-lint/releases/tag/v1.19.0
+- go-arch-lint: https://github.com/fe3dback/go-arch-lint/releases/tag/v1.19.1
 - gofumpt: https://github.com/mvdan/gofumpt/releases/tag/v0.12.0
-- gosec: https://github.com/securego/gosec/releases/tag/v2.29.0
+- gosec: https://github.com/securego/gosec/releases/tag/v2.30.0
 - gremlins: https://github.com/go-gremlins/gremlins/releases/tag/v0.6.0
 - yq: https://github.com/mikefarah/yq/releases/tag/v4.54.1
 - ripgrep: https://github.com/BurntSushi/ripgrep/releases/tag/15.2.0
 - fd: https://github.com/sharkdp/fd/releases/tag/v10.5.0
-- mockery: https://github.com/vektra/mockery/releases/tag/v3.8.1
+- mockery: https://github.com/vektra/mockery/releases/tag/v3.9.0
 - go-licenses: https://github.com/google/go-licenses/releases/tag/v2.0.1
 - goimports: https://github.com/golang/tools/releases/tag/v0.52.0
 - nilaway: https://github.com/uber-go/nilaway (no releases/tags; pseudo-version from module proxy)
-- markdownlint-cli: https://github.com/igorshubovych/markdownlint-cli/releases/tag/0.49.1
+- markdownlint-cli: https://github.com/igorshubovych/markdownlint-cli/releases/tag/0.50.0
 - prettier: https://www.npmjs.com/package/prettier
 
 ## Official sha256 of the Go 1.27.3 tarballs
@@ -142,7 +142,7 @@ installs cgo dependencies in its final stage. On ubuntu:26.04 this maps to:
 
 ## How Node / markdownlint-cli is installed on ubuntu:26.04
 
-markdownlint-cli 0.49.1 requires **Node >= 22**.
+markdownlint-cli 0.50.0 requires **Node >= 22**.
 
 **Decision: native installation via apt.** Verified that Ubuntu 26.04
 (Resolute Raccoon) ships in universe:
@@ -151,7 +151,7 @@ markdownlint-cli 0.49.1 requires **Node >= 22**.
 - glibc (`libc6`) = **2.43**.
 
 So `apt-get install -y nodejs npm` is used, followed by
-`npm install -g markdownlint-cli@0.49.1`. This is a native approach with no
+`npm install -g markdownlint-cli@0.50.0`. This is a native approach with no
 glibc-compatibility issues and no third-party repositories (nodesource not
 needed).
 
