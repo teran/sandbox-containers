@@ -4,22 +4,24 @@ on:
   pull_request:
     paths:
       - 'golang/**'
+      - 'node/**'
       - '.github/workflows/**'
   push:
     branches:
       - master
     paths:
       - 'golang/**'
+      - 'node/**'
       - '.github/workflows/**'
-
-env:
-  IMAGE: ghcr.io/teran/sandbox-containers/golang
 
 jobs:
   # ---------------------------------------------------------------- hadolint
   hadolint:
-    name: Lint Dockerfile (hadolint)
+    name: Lint Dockerfile (hadolint) (${{ matrix.dir }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: [golang, node]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,14 +29,19 @@ jobs:
       - name: Run hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: golang/Dockerfile
+          dockerfile: ${{ matrix.dir }}/Dockerfile
           failure-threshold: error
 
   # ------------------------------------------------------------------- build
   build:
-    name: Build & push image
+    name: Build & push image (${{ matrix.dir }})
     needs: hadolint
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { dir: golang, version_arg: GOLANG_VERSION }
+          - { dir: node,  version_arg: NODE_VERSION }
     permissions:
       contents: read
       packages: write
@@ -42,16 +49,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract Go version from Dockerfile
+      # The runtime version is extracted from the Dockerfile's version ARG
+      # (GOLANG_VERSION / NODE_VERSION), so it is never hardcoded in CI.
+      - name: Extract version from Dockerfile
         id: version
         run: |
-          GO_VERSION="$(grep -oP 'GOLANG_VERSION=\K[0-9.]+' golang/Dockerfile | head -n1)"
-          echo "go_version=${GO_VERSION}" >> "$GITHUB_OUTPUT"
+          VERSION="$(grep -oP "${{ matrix.version_arg }}=\K[0-9.]+" "${{ matrix.dir }}/Dockerfile" | head -n1)"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Set image tags
         id: tags
         run: |
-          VERSION="${{ steps.version.outputs.go_version }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          IMAGE="ghcr.io/teran/sandbox-containers/${{ matrix.dir }}"
           SHORT_SHA="${GITHUB_SHA::7}"
           if [ "${{ github.event_name }}" = "push" ]; then
             TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
@@ -60,7 +70,7 @@ jobs:
             TAGS="${IMAGE}:${VERSION}"
           fi
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
-          echo "go_version=${VERSION}"
+          echo "version=${VERSION}"
           echo "tags=${TAGS}"
 
       - name: Set up QEMU
@@ -80,8 +90,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./golang
-          file: golang/Dockerfile
+          context: ./${{ matrix.dir }}
+          file: ${{ matrix.dir }}/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.tags.outputs.tags }}
