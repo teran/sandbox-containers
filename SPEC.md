@@ -23,9 +23,11 @@ Every image is:
 | Image | Directory | Runtime | Base |
 |---|---|---|---|
 | `golang` | `golang/` | Go 1.27.3 | `ubuntu:26.04` |
+| `node` | `node/` | Node.js 26.13.0 | `ubuntu:26.04` |
 
-The only image today is the **Go sandbox** (`golang/`). See
-[`golang/README.md`](golang/README.md) for its full contents and rationale.
+The two images today are the **Go sandbox** (`golang/`) and the **Node sandbox**
+(`node/`). See [`golang/README.md`](golang/README.md) and
+[`node/README.md`](node/README.md) for their full contents and rationale.
 
 ### 2.1 The Go sandbox (`golang/`)
 
@@ -41,6 +43,21 @@ The only image today is the **Go sandbox** (`golang/`). See
 - **Non-root** runtime user `1000:1000`; dedicated volumes for Go caches.
 - System packages mirroring the cgo/base requirements of the official image
   (`gcc g++ make libc6-dev pkg-config binutils-gold` on arm64, git, etc.).
+
+### 2.2 The Node sandbox (`node/`)
+
+- **Node.js 26.13.0 (LTS "Lithium")** installed from the official tarball into
+  `/usr/local` (the same layout as the official `node` image); npm is bundled.
+- **npm-installed toolset** (integrity-verified by npm): `pnpm 12.16.1`,
+  `typescript 7.0.2`, `eslint 10.13.0`, `prettier 3.9.10`,
+  `markdownlint-cli 0.50.0`.
+- **CLI utilities** (GitHub binary releases, pinned `sha256`): `yq 4.54.1`,
+  `ripgrep 15.2.0` (musl), `fd 10.5.0`.
+- **System packages** (apt): `ca-certificates curl wget git openssh-client jq
+  libatomic1 shellcheck`. `libatomic1` is required because the official Linux
+  Node ≥ 25 binaries link against `libatomic`.
+- **Non-root** runtime user `1000:1000`; dedicated volumes for the npm/pnpm
+  caches.
 
 ## 3. Build architecture
 
@@ -76,29 +93,33 @@ Multi-platform builds use **Docker Buildx with QEMU** (`docker/setup-qemu-action
 
 The workflow `.github/workflows/build.yml` ("Build sandbox images") runs on
 `pull_request` and `push` to `master`, filtered by paths
-(`golang/**`, `.github/workflows/**`).
+(`golang/**`, `node/**`, `.github/workflows/**`). It is a **matrix** over the
+two images (`golang` and `node`).
 
 ### 4.1 Jobs
 
 | Job | On PR | On push to `master` |
 |---|---|---|
-| `hadolint` | ✅ lint `golang/Dockerfile` | ✅ lint `golang/Dockerfile` |
+| `hadolint` | ✅ lint each image's `Dockerfile` | ✅ lint each image's `Dockerfile` |
 | `build` | ✅ build multi-platform (no push) | ✅ build + **push** multi-platform |
 
-- `hadolint` runs `hadolint/hadolint-action@v3.1.0` on `golang/Dockerfile`
-  with `failure-threshold: error`.
+- `hadolint` runs `hadolint/hadolint-action@v3.1.0` on each image's
+  `Dockerfile` with `failure-threshold: error`.
 - `build` `needs: hadolint`, so a lint failure blocks the build.
 
 ### 4.2 Tag derivation
 
-The **Go version** is **not hardcoded** in the workflow. It is extracted from
-the `Dockerfile`:
+The **runtime version** is **not hardcoded** in the workflow. It is extracted
+from each image's `Dockerfile` via a matrix, e.g.:
 
 ```bash
+# golang image
 GO_VERSION="$(grep -oP 'GOLANG_VERSION=\K[0-9.]+' golang/Dockerfile | head -n1)"
+# node image
+NODE_VERSION="$(grep -oP 'NODE_VERSION=\K[0-9.]+' node/Dockerfile | head -n1)"
 ```
 
-On a **push** to `master` the image is tagged with three tags:
+On a **push** to `master` each image is tagged with three tags:
 `<version>`, `<version>-<short-sha>`, `<version>-<short-sha>-<timestamp>`,
 where `<short-sha>` is the first 7 characters of `GITHUB_SHA` and
 `<timestamp>` is UTC `YYYYMMDDHHMMSS`. On a **pull request** only the
@@ -106,25 +127,26 @@ where `<short-sha>` is the first 7 characters of `GITHUB_SHA` and
 
 ### 4.3 Tag scheme
 
-| Tag | Example | Meaning | Pushed |
+| Tag | Example (golang / node) | Meaning | Pushed |
 |---|---|---|---|
-| `<go-version>` | `1.27.3` | immutable, per Go release | ✅ push |
-| `<go-version>-<short-sha>` | `1.27.3-4c8f2a1` | per commit, stable | ✅ push |
-| `<go-version>-<short-sha>-<timestamp>` | `1.27.3-4c8f2a1-20241014120000` | per build, unique | ✅ push |
-| `<go-version>` (PR build) | `1.27.3` | local build only | ❌ never pushed |
+| `<runtime-version>` | `1.27.3` / `26.13.0` | immutable, per release | ✅ push |
+| `<runtime-version>-<short-sha>` | `1.27.3-4c8f2a1` / `26.13.0-4c8f2a1` | per commit, stable | ✅ push |
+| `<runtime-version>-<short-sha>-<timestamp>` | `1.27.3-4c8f2a1-20241014120000` / `26.13.0-4c8f2a1-20241014120000` | per build, unique | ✅ push |
+| `<runtime-version>` (PR build) | `1.27.3` / `26.13.0` | local build only | ❌ never pushed |
 
 Pushing occurs only when `github.event_name == 'push'`.
 
 ### 4.4 Registry & authentication
 
 - **Registry:** GitHub Container Registry (`ghcr.io`).
-- **Image:** `ghcr.io/teran/sandbox-containers/golang`.
+- **Images:** `ghcr.io/teran/sandbox-containers/golang` and
+  `ghcr.io/teran/sandbox-containers/node`.
 - **Login:** `docker/login-action@v3` with `registry: ghcr.io`,
   `username: ${{ github.actor }}`, `password: ${{ secrets.GITHUB_TOKEN }}`,
   performed **only** on push.
 - **Permissions:** the `build` job declares
   `permissions: { contents: read, packages: write }`, which is what authorizes
-  the `GITHUB_TOKEN` to push the image.
+  the `GITHUB_TOKEN` to push the images.
 
 ## 5. Repository structure
 
@@ -132,10 +154,14 @@ Pushing occurs only when `github.event_name == 'push'`.
 .
 ├── .github/
 │   └── workflows/
-│       └── build.yml          # CI: hadolint + build (+ push on master)
+│       └── build.yml          # CI: hadolint + build (+ push on master) — matrix golang, node
 ├── golang/
 │   ├── Dockerfile             # Go 1.27.3 sandbox (multi-stage, multi-arch)
 │   ├── README.md              # full Go-image documentation
+│   └── .dockerignore          # keep the build context lean
+├── node/
+│   ├── Dockerfile             # Node.js 26.13.0 sandbox (multi-stage, multi-arch)
+│   ├── README.md              # full Node-image documentation
 │   └── .dockerignore          # keep the build context lean
 ├── LICENSE                    # Apache License 2.0
 ├── README.md                  # repository overview
@@ -146,8 +172,9 @@ Pushing occurs only when `github.event_name == 'push'`.
 ## 6. Adding a new sandbox image
 
 New images are added as **subdirectories** (one directory per image):
-`python/`, `node/`, `rust/`, etc. The Go image (`golang/`) is the reference
-implementation to copy.
+`python/`, `rust/`, etc. The Go image (`golang/`) is the reference
+implementation, and the Node image (`node/`) is a second implemented example
+that follows the same pattern.
 
 ### 6.1 Procedure
 
@@ -160,11 +187,12 @@ implementation to copy.
 4. **Extend the workflow** — in `.github/workflows/build.yml`:
    - add the new directory to the `paths:` filters (both `pull_request` and
      `push`);
-   - set the `IMAGE` env var to the new image name
-     (`ghcr.io/teran/sandbox-containers/<name>`);
+   - add a row to the `matrix` (`dir` + `version_arg`, e.g. `python` /
+     `PYTHON_VERSION`); the `IMAGE` (`ghcr.io/teran/sandbox-containers/<name>`)
+     is derived from `matrix.dir`;
    - point `hadolint` and `docker/build-push-action` at the new `Dockerfile`
-     and `context`;
-   - adjust the version-extraction `grep` to the new version `ARG`
+     and `context` (both already parameterized by `matrix.dir`);
+   - the version-extraction `grep` uses `matrix.version_arg`
      (e.g. `PYTHON_VERSION`).
 5. **Document** — add the image to the table in this `SPEC.md` and to the
    root `README.md`; keep the image `README.md` in sync.
@@ -174,9 +202,10 @@ implementation to copy.
 ### 6.2 Workflow logic to adapt (reference)
 
 - `paths` filters: `'<dir>/**'` and `'.github/workflows/**'`.
-- `IMAGE`: `ghcr.io/teran/sandbox-containers/<name>`.
-- Version extraction: `grep -oP '<ARG_NAME>=\K[0-9.]+' <dir>/Dockerfile`.
-- `context` / `file`: the new subdirectory and its `Dockerfile`.
+- `matrix` row: `{ dir: <name>, version_arg: <VERSION_ARG> }`.
+- `IMAGE`: derived as `ghcr.io/teran/sandbox-containers/${{ matrix.dir }}`.
+- Version extraction: `grep -oP '${{ matrix.version_arg }}=\K[0-9.]+' ${{ matrix.dir }}/Dockerfile`.
+- `context` / `file`: `./${{ matrix.dir }}` and `${{ matrix.dir }}/Dockerfile`.
 
 ## 7. Security & reproducibility notes
 

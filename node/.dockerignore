@@ -1,0 +1,22 @@
+# Node.js projects (build context)
+**/node_modules
+**/package-lock.json
+**/pnpm-lock.yaml
+**/yarn.lock
+**/.npmrc
+
+# Git / editors
+.git
+.gitignore
+.gitlab
+.idea
+.vscode
+*.swp
+.DS_Store
+
+# Logs and artifacts
+*.log
+*.tmp
+build/
+dist/
+coverage/
