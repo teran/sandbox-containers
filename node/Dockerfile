@@ -62,6 +62,7 @@ ARG FD_SHA256_ARM64=c0ee43802e3313a317c5af2f4eabd6ba13eeedd595af9775f05e18a13ac4
 # build stage: download and verify Node.js + CLI tools
 # ============================================================================
 FROM ubuntu:${UBUNTU_VERSION} AS build
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG TARGETARCH
 ARG NODE_VERSION
 ARG NODE_SHA256_AMD64
@@ -99,7 +100,7 @@ RUN set -eux; \
     esac; \
     asset="node-v${NODE_VERSION}-linux-${arch}.tar.gz"; \
     curl -fsSL -o "/tmp/${asset}" "https://nodejs.org/dist/v${NODE_VERSION}/${asset}"; \
-    (cd /tmp && echo "${sha256} *${asset}" | sha256sum -c -); \
+    echo "${sha256}  /tmp/${asset}" | sha256sum -c -; \
     tar -C /usr/local --strip-components=1 -xzf "/tmp/${asset}"; \
     rm "/tmp/${asset}"
 
@@ -153,6 +154,7 @@ RUN set -eux; \
 # final stage: ubuntu:26.04 + node:26.13.0 environment + tools
 # ============================================================================
 FROM ubuntu:${UBUNTU_VERSION} AS final
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG NODE_VERSION
 ARG PNPM_VERSION
 ARG TYPESCRIPT_VERSION

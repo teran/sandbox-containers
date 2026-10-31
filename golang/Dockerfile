@@ -73,6 +73,7 @@ ARG PRETTIER_VERSION=3.9.10
 # build stage: download and verify Go + tools
 # ============================================================================
 FROM ubuntu:${UBUNTU_VERSION} AS build
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG TARGETARCH
 ARG GOLANG_VERSION
 ARG GO_SHA256_AMD64
@@ -119,7 +120,7 @@ RUN set -eux; \
     esac; \
     asset="go${GOLANG_VERSION}.linux-${TARGETARCH}.tar.gz"; \
     curl -fsSL -o "/tmp/${asset}" "https://dl.google.com/go/${asset}"; \
-    (cd /tmp && echo "${sha256} *${asset}" | sha256sum -c -); \
+    echo "${sha256}  /tmp/${asset}" | sha256sum -c -; \
     tar -C /usr/local -xzf "/tmp/${asset}"; \
     rm "/tmp/${asset}"; \
     go version
@@ -259,6 +260,7 @@ RUN set -eux; \
 # final stage: ubuntu:26.04 + golang:1.27.3 environment + tools
 # ============================================================================
 FROM ubuntu:${UBUNTU_VERSION} AS final
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG GOLANG_VERSION
 ARG MARKDOWNLINT_CLI_VERSION
 ARG PRETTIER_VERSION
